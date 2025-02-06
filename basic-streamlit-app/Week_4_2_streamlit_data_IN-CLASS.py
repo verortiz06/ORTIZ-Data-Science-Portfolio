@@ -26,11 +26,26 @@ st.dataframe(df)
 
 # Using a selectbox to allow users to filter data by city
 # Students learn how to use widgets in Streamlit for interactivity
+# SIMPLE QUERIES OVER A DATA FRAME
+
+city = st.selectbox("Select a city", df["City"].unique())
+
+# lets the users select a city from our dataframe
+# first parameter is the text on top, second one is list of values
+# could manually create a list, but that might take forever
+# we can use pandas logic and methods instead to create the list for us
+# access the city column
+# use method unique
+# you get a dropdown menu of all the values in the city column
+# but, we want our buttons to actually do something; do something with the selectbox
 
 # Filtering the DataFrame based on user selection
 
-# Display the filtered results
+filtered_df = df[df["City"] == city]
 
+# Display the filtered results
+st.write(f"People in {city}:")
+st.dataframe(filtered_df)
 
 # ================================
 # Step 3: Importing Data Using a Relative Path
@@ -41,10 +56,20 @@ st.dataframe(df)
 # # Ensure the "data" folder exists with the CSV file
 # Display the imported dataset
 
+# can't just copy the file path as usual - copy the relative path for the file you want to reference
+df2 = pd.read_csv("Data/sample_data.csv")
+st.dataframe(df2)
+
+
 # Using a selectbox to allow users to filter data by city
 # Students learn how to use widgets in Streamlit for interactivity
+salary = st.slider("Choose a salary range:",
+                   min_value = df2["Salary"].min(),
+                   max_value = df2["Salary"].max())
 
 # Filtering the DataFrame based on user selection
+st.write(f"Salaries under {salary}:")
+st.dataframe(df2[df2["Salary"] <= salary])
 
 # Display the filtered results
 
