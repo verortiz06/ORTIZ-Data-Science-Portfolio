@@ -72,17 +72,52 @@ st.pyplot(fig) # shows the art/missing values
 # ================================================================================
 st.subheader("Handle Missing Data")
 
-# Work on a copy of the DataFrame so the original data remains unchanged.
 column = st.selectbox("Choose a column to fill", df.select_dtypes(include=["number"]).columns) # grabs only numberic columns
+
 # Apply the selected method to handle missing data.
-st.dataframe(df[column]) # only access that column, not the whole dataframe
-# also want to provide a method for imputing data
+#st.dataframe(df[column]) # only access that column, not the whole dataframe
+
+# also want to provide a method for imputing/handling the missing data in those columns
 method = st.radio("Choose a method:", 
-         ["Original DF", "Drop Rows", "Drop Columns", 
+         ["Original DF", "Drop Rows", "Drop Columns (>50% missing)", 
         "Impute Mean", "Impute Median", "Impute Zero"]) 
-# radio box lets you see all options at once
+# radio box lets you see all options at once for deleting or imputing data, including the original dataframe
 
+# Work on a copy of the DataFrame so the original data remains unchanged.
+# df is going to remain untouched
+# df_clean is going to be our imputation/deletion dataframe
+df_clean = df.copy() # YOU NEED TO DO THE .COPY() or else the original df WILL change
 
+if method == "Original DF":
+    pass # can use this keyword to skip through the entire conditional statement
+elif method == "Drop Rows":
+    df_clean = df_clean.dropna(subset = [column]) # function that drops all rows that have a missing value
+    # adding subset = [column] just drops null values from selected column
+elif method == "Drop Columns (<50% Missing)":
+    # Drop columns where more than 50% of the values are missing.
+    df_clean == df_clean.drop(columns = df_clean.columns[df_clean.isnull().mean() > 0.50])
+elif method == "Impute Mean":
+    # replace values in selected column with the column's mean
+    df_clean[column] = df_clean[column].fillna(df[column].mean())
+elif method == "Impute Median":
+    # replace values in selected column with the column's median
+    df_clean[column] = df_clean[column].fillna(df[column].median())
+elif method == "Impute Zero": 
+    #replace missing values with zero - pretty common
+    df_clean[column] = df_clean[column].fillna(0)
+
+# you don't need an else statement because the radio button shows us all the options we have
+
+st.subheader("Cleaned Data Distribution")
+fig, ax = plt.subplots() #creating blank canvas
+sns.histplot(df_clean[column], kde = True) #histogram showing distribution; painted on canvas
+st.pyplot(fig) #revealing the painting
+# st.dataframe(df_clean)
+st.write(df_clean.describe()) # shows us summary stats for new dataframe
+# age column had so many missing values, imputing anything skews the entire distribution
+# we have to be careful when imputing data
+# age was a variable where all minors were unaccounted for -- this was MNAR (missing not at random)
+# imputation methods (especially for MNAR) are very risky
 
 # ------------------------------------------------------------------------------
 # Compare Data Distributions: Original vs. Cleaned
