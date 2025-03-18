@@ -4,7 +4,7 @@
 
 This repository is a centralized place to showcase all of my classwork and notable data science projects, which will highlight my experiences and technical skills!  
 - It contains the following basic folders: `Datasets`, `Visualizations`, `EDA`, and `Models`.
-- Additionally, it contains in-class Jupyter notebooks which are organized by subject and week number! (Ex. *"Missing-Data-(Week 5)"*)
+- Additionally, it contains in-class Jupyter notebooks which are organized by week number and subject! (Ex. *"(Week 5)-Missing-Data"*)
 - Finally *(and most importantly)*, it houses various projects I've worked on such as **`Basic-Streamlit-App`** and **`TidyData-Project`**
 
 ## 🚀 Featured Projects
