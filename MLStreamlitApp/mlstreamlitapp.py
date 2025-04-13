@@ -12,3 +12,6 @@ from sklearn.preprocessing import StandardScaler
 # -----------------------------------------------
 # Application Information
 # ----------------------------------------------
+st.title("Supervised Machine Learning App")
+
+
