@@ -12,4 +12,3 @@ from sklearn.preprocessing import StandardScaler
 # -----------------------------------------------
 # Application Information
 # ----------------------------------------------
-
