@@ -1,3 +1,6 @@
+# -----------------------------------------------
+# Importing All Necessary Libraries
+# ----------------------------------------------
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -17,19 +20,18 @@ from sklearn import tree
 # -----------------------------------------------
 # App Information
 # ----------------------------------------------
-st.title("Supervised Machine Learning Playground! 🛝")
-st.markdown("""
+st.title("Supervised Machine Learning Playground! 🛝") # Creating a title for the app
+st.markdown(""" 
 ## 📋 About This Application:
 This interactive application allows you to upload datasets, experiment with hyperparameters, and observe how you can affect 
 the model's training and performance.
-""")
+""") # App description and explanation
 st.info("Let's build a machine learning model!")
 
 # -----------------------------------------------
-# Uploading/Selecting a Dataset
+# Step 1: Uploading/Selecting a Dataset
 # ----------------------------------------------
-
-st.sidebar.header("Step 1: Upload or Select a Dataset")
+st.sidebar.header("Step 1: Upload or Select a Dataset") # Creating a sidebar header for this step
 
 # Putting in classic sample datasets
 sample_datasets = {
@@ -47,17 +49,17 @@ if dataset_options == "Upload Your Own":
         df = pd.read_csv(uploaded_file)
     else:
         st.warning("Please upload a CSV file.") # Will give a warning to the user that they need to upload something or choose a sample dataset
-# If the user chooses to use one of the sample datasets
+
+# If the user chooses to use one of the sample datasets (Titanic or Iris)
 else: 
     df = sample_datasets[dataset_options]
-    if dataset_options == "Titanic Dataset": # The Titanic Sample Dataset 
+    if dataset_options == "Titanic Dataset": # If the user chooses the Titanic Sample Dataset 
         df = pd.get_dummies(df, columns = ["sex"], drop_first = True) # Make sex a dummy variable
-        features = ["pclass", "age", "sibsp", "parch", "fare", "sex_male"]
+        features = ["pclass", "age", "sibsp", "parch", "fare", "sex_male"] # The features from the Titanic Dataset that will be included
         df = df[features + ["survived"]]  # Keep only selected features and target
-        df["survived"] = df["survived"].astype("category")
+        df["survived"] = df["survived"].astype("category") # This makes the "survived" variable a categorical one, which is necessary for the machine learning models we're using
 
-
-        # Creating a section where the user can customize the features of the Titanic Dataset
+        # Creating a section where the user can customize and play with the features of the Titanic Dataset
         st.sidebar.write("Build your own Titanic Passenger!") 
         custom_input = {
             "pclass": st.sidebar.slider("Passenger Class", int(df["pclass"].min()), int(df["pclass"].max())),
@@ -67,9 +69,9 @@ else:
             "fare": st.sidebar.slider("Fare Paid", int(df["fare"].min()), int(df["fare"].max())),
             "sex_male": st.sidebar.slider("Female (0) or Male (1)", int(df["sex_male"].min()), int(df["sex_male"].max()))
         }
-    if dataset_options == "Iris Dataset": # The Iris Sample Dataset
+    if dataset_options == "Iris Dataset": # If the user chooses the Iris Sample Dataset
         
-        # Creating a section where the user can customize the features of the Iris Dataset
+        # Creating a section where the user can customize and play with the features of the Iris Dataset
         st.sidebar.write("Customize Input Features:")
         custom_input = {
             "sepal_length": st.sidebar.slider("Sepal Length", float(df["sepal_length"].min()), float(df["sepal_length"].max()), float(df["sepal_length"].mean())),
@@ -80,19 +82,19 @@ else:
     
 st.divider()
 
-# Showing a preview of the dataset before any machine learning, customizations, or other changes
+# Will show the user a preview of the dataset before any machine learning, customizations, or other changes
 st.write("## 🔍 Dataset Preview")
 st.markdown("Here you can see a general idea of what your chosen dataset" \
 " looks like!")
-st.dataframe(df.head())
+st.dataframe(df.head()) # Displays only the first five rows of the dataset
 
 st.divider()
 
 # -----------------------------------------------
-# Choosing a Target Variable for the Dataset
+# Step 2: Choosing a Target Variable for the Dataset
 # ----------------------------------------------
 st.sidebar.header("Step 2: Choose Target Variable")
-categorical_columns = df.select_dtypes(include=['category', 'object']).columns.tolist()
+categorical_columns = df.select_dtypes(include=['category', 'object']).columns.tolist() # These lines of code will make it so that the user can only choose categorical variables as the target
 target_col = st.sidebar.selectbox("Select a categorical column to predict:", categorical_columns)
 
 # Define features (X) and target (y)
@@ -101,12 +103,12 @@ X = df[selected_features]
 y = df[target_col]
 
 # -----------------------------------------------
-# Choosing a Machine Learning Model
+# Step 3: Choosing a Machine Learning Model
 # ----------------------------------------------
 # Sidebar section to choose the ML model
 st.sidebar.header("Step 3: Select Your Machine Learning Model")
-model_choice = st.sidebar.selectbox("Choose a model:", ["Logistic Regression", "Decision Tree", "K-Nearest Neighbors"])
-if model_choice == "Logistic Regression":
+model_choice = st.sidebar.selectbox("Choose a model:", ["Logistic Regression", "Decision Tree", "K-Nearest Neighbors"]) # The ML models we have as options
+if model_choice == "Logistic Regression": # If the user chooses Logistic Regression, this explanation will appear
     st.sidebar.markdown("""
     **Logistic Regression** is a linear model used for binary or multiclass classification.
 
@@ -115,14 +117,14 @@ if model_choice == "Logistic Regression":
     This machine learning model is great for understanding the impact of individual features
     on a specific outcome.
     """)
-elif model_choice == "Decision Tree":
+elif model_choice == "Decision Tree": # If the user chooses the Decision Tree, this explanation will appear
     st.sidebar.markdown("""
     **Decision Trees** are flowchart-like structures that make decusions by asking a series of yes/no questions.
     
     A decision tree is composed of nodes and branches that mimic human decision making!
 
     """)
-elif model_choice == "K-Nearest Neighbors":
+elif model_choice == "K-Nearest Neighbors": # If the user chooses K-Nearest Neighbors, this explanation will appear
     st.sidebar.markdown("""
     **K-Nearest Neighbors (KNN)** is a simple, instance-based algorithm best suited for classification tasks 
     where outcomes are categorical.
@@ -134,22 +136,22 @@ elif model_choice == "K-Nearest Neighbors":
     """)
 
 # -----------------------------------------------
-# Playing with Hyperparameters
+# Step 4: Playing with Hyperparameters
 # ----------------------------------------------
 # Sidebar section to adjust hyperparameters based on the model choice
 st.sidebar.header("Step 4: Set Hyperparameters")
-if model_choice == "Logistic Regression":
-    max_iter = st.sidebar.slider("Maximum Iterations:", 100, 1000, 200, step = 50)
+if model_choice == "Logistic Regression": # If they choose a Logistic Regression model
+    max_iter = st.sidebar.slider("Maximum Iterations:", 100, 1000, 200, step = 50) # This is the hyperparameter they can tune
     model = LogisticRegression(max_iter = max_iter)
-elif model_choice == "Decision Tree":
-    max_depth = st.sidebar.slider("Max Depth:", 1, 20, 5)
+elif model_choice == "Decision Tree": # If they choose a Decision Tree model
+    max_depth = st.sidebar.slider("Max Depth:", 1, 20, 5) # This is the hyperparameter they can tune
     model = DecisionTreeClassifier(max_depth = max_depth)
-elif model_choice == "K-Nearest Neighbors":
-    n_neighbors = st.sidebar.slider("Number of Neighbors (K):", 1, 20, 5)
+elif model_choice == "K-Nearest Neighbors": # If they choose a KNN model
+    n_neighbors = st.sidebar.slider("Number of Neighbors (K):", 1, 20, 5) # This is the hyperparameter they can tune
     model = KNeighborsClassifier(n_neighbors = n_neighbors)
 
 # -----------------------------------------------
-# Customizing the Train-Test Split Ratio
+# Step 5: Customizing the Train-Test Split Ratio
 # ----------------------------------------------
 # Sidebar section to define the train-test split ratio
 st.sidebar.header("Step 5: Define your Train-Test Split ratio")
@@ -168,7 +170,7 @@ model.fit(X_train, y_train)
 y_pred = model.predict(X_test)
 
 # -----------------------------------------------
-# The Model's Performance
+# Showing the Model's Performance
 # ----------------------------------------------
 # Calculating performance metrics
 accuracy = accuracy_score(y_test, y_pred)
@@ -208,7 +210,7 @@ In a **binary classification** (such as the Titanic dataset predicting survival)
 - **Top-right** = False Positives (predicted survival, but actually didn’t)
 - **Bottom-left** = False Negatives (predicted non-survival, but actually survived)
 - **Bottom-right** = True Positives (correctly predicted survivals)
-""")
+""") # Explanation the user will get for the Titanic Confusion Matrix
 
 # Confusion Matrix explanation for Iris Dataset
 if dataset_options == "Iris Dataset":
@@ -224,11 +226,11 @@ if dataset_options == "Iris Dataset":
     st.markdown("""In a **multiclass classification** (such as this one!) which has three classes (due to there
                  being three species of iris), it shows how often the model confuses one class for another. The darker
                 the square when the 'actual' data matches the 'predicted' data is, the better your model is!
-""")
+""") # Explanation the user will get for the Iris Confusion Matrix
 
 st.divider()
 
-# Show predicted vs actual values for inspection
+# Showing predicted vs actual values so they user can inspect
 st.write("## 🕵️ Model Predictions")
 st.markdown("The table below allows you to inspect the dataset by displaying the actual data versus" \
 " the model's predicted values in the last two columns. With this, you can get another sense of which certain cases the model gets" \
@@ -238,8 +240,8 @@ pred_df['Actual'] = y_test
 pred_df['Predicted'] = y_pred
 st.dataframe(pred_df)
 
-# ROC Curve
-if len(model.classes_) == 2:  # ROC curves only wor for binary classification
+# The ROC Curve -- Will only appear for the Titanic Dataset since it is a binary
+if len(model.classes_) == 2:  # ROC curves only works for binary classification
     fpr, tpr, thresholds = roc_curve(y_test, model.predict_proba(X_test)[:, 1])
     auc_score = roc_auc_score(y_test, model.predict_proba(X_test)[:, 1])
 
@@ -248,7 +250,7 @@ if len(model.classes_) == 2:  # ROC curves only wor for binary classification
     " Positive Rate (FPR). The ROC curve only works for binary classification models" \
     " and essentially, it illustrates how well the model is performing in discriminating" \
     " between two classes compared to just a random 50-50 guess! Therefore, the more concave" \
-    " the ROC curve is in comparison to the 'Random Guess' line, the better your model is.")
+    " the ROC curve is in comparison to the 'Random Guess' line, the better your model is.") # Explanation for the ROC curve
     plt.figure()
     plt.plot(fpr, tpr, label=f"ROC Curve (AUC = {auc_score:.2f})")
     plt.plot([0, 1], [0, 1], 'k--', label = "Random Guess")
@@ -263,7 +265,7 @@ if len(model.classes_) == 2:  # ROC curves only wor for binary classification
 # Displaying Predictions
 # ----------------------------------------------
 
-# Model Predictions for the Iris Dataset
+# Model Predictions if the user chooses the Iris Dataset
 if dataset_options == "Iris Dataset":
     custom_df = pd.DataFrame([custom_input])
     proba = model.predict_proba(custom_df)[0]
@@ -283,7 +285,7 @@ if dataset_options == "Iris Dataset":
         hide_index = True
     )
 
-# Model Predictions for the Titanic Dataset
+# Model Predictions if the user chooses the Titanic Dataset
 if dataset_options == "Titanic Dataset":
     custom_df = pd.DataFrame([custom_input])
     proba = model.predict_proba(custom_df)[0]
