@@ -48,7 +48,8 @@ if dataset_options == "Upload Your Own":
     if uploaded_file:
         df = pd.read_csv(uploaded_file)
     else:
-        st.warning("Please upload a CSV file.") # Will give a warning to the user that they need to upload something or choose a sample dataset
+        st.warning("Please upload a CSV file. Error will occur and no Dataset Preview will be available due to there" \
+        " not being a dataset uploaded yet!") # Will give a warning to the user that they need to upload something or choose a sample dataset
 
 # If the user chooses to use one of the sample datasets (Titanic or Iris)
 else: 
