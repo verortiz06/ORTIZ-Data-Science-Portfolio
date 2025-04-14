@@ -292,7 +292,7 @@ if dataset_options == "Titanic Dataset":
     st.subheader("Survival Prediction 🚢🧊")
     st.write("If you play around with the customizable input features in the sidebar, " \
     "you will be able to see the model's predictions below! The percentages illustrate the model's" \
-    " estimated probability of guessing the species correct based on your custom input.")
+    " estimated probability of predicting correctly based on your custom input.")
     st.dataframe(
         pd.DataFrame([df_prediction_proba], columns = ["Did Not Survive (0)", "Survived (1)"]),
         column_config = {
