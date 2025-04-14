@@ -1,6 +1,6 @@
 # Streamlit App: Supervised Machine Learning
 ## 📌 Project Overview 
-This project is centered around creating an interactive Streamlit app that allows users to explore core concepts of classification models in machine learning! In this streamlit app, users can
+This project is centered around creating an interactive Streamlit app that allows users to explore core concepts of classification models in machine learning! In this streamlit app, users can:
 - Select from preloaded datasets (such at the Iris or Titanic datasets) or upload their own
 - Customize the chosen dataset's features and let the imagination run wild while building hypothetical datasets
 - Choose from popular classification models (Logistic Regression, Decision Tree, KNN)
