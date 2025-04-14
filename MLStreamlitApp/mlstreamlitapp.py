@@ -13,7 +13,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 
 # -----------------------------------------------
-# Application Information
+# App Information
 # ----------------------------------------------
 st.title("Supervised Machine Learning Playground! 🛝")
 st.markdown("""
@@ -22,7 +22,7 @@ This interactive application allows you to upload datasets, experiment with hype
 the model's training and performance.
 """)
 st.info("Let's build a machine learning model!")
-#
+
 # -----------------------------------------------
 # Uploading/Selecting a Dataset
 # ----------------------------------------------
@@ -39,20 +39,21 @@ dataset_options = st.sidebar.selectbox("Choose a sample dataset or upload your o
 
 # If the user chooses to upload their own dataset
 if dataset_options == "Upload Your Own":
-    uploaded_file = st.sidebar.file_uploader("Upload CSV", type=["csv"])
+    uploaded_file = st.sidebar.file_uploader("Upload CSV", type=["csv"]) # Allows the user to upload their own dataset
     if uploaded_file:
         df = pd.read_csv(uploaded_file)
     else:
-        st.warning("Please upload a CSV file.")
+        st.warning("Please upload a CSV file.") # Will give a warning to the user that they need to upload something or choose a sample dataset
 # If the user chooses to use one of the sample datasets
 else: 
     df = sample_datasets[dataset_options]
-    if dataset_options == "Titanic Dataset":
-        df = df.dropna(subset = ['age'])
-        df = pd.get_dummies(df, columns = ["sex"], drop_first = True)
+    if dataset_options == "Titanic Dataset": # The Titanic Sample Dataset 
+        df = pd.get_dummies(df, columns = ["sex"], drop_first = True) # Make sex a dummy variable
         features = ["pclass", "age", "sibsp", "parch", "fare", "sex_male"]
         df = df[features + ["survived"]]  # Keep only selected features and target
-        st.sidebar.write("Build your own Titanic Passenger!")
+        
+        # Creating a section where the user can customize the features of the Titanic Dataset
+        st.sidebar.write("Build your own Titanic Passenger!") 
         custom_input = {
             "pclass": st.sidebar.slider("Passenger Class", int(df["pclass"].min()), int(df["pclass"].max())),
             "age": st.sidebar.slider("Age", int(df["age"].min()), int(df["age"].max())),
@@ -61,7 +62,9 @@ else:
             "fare": st.sidebar.slider("Fare Paid", int(df["fare"].min()), int(df["fare"].max())),
             "sex_male": st.sidebar.slider("Female (0) or Male (1)", int(df["sex_male"].min()), int(df["sex_male"].max()))
         }
-    if dataset_options == "Iris Dataset":
+    if dataset_options == "Iris Dataset": # The Iris Sample Dataset
+        
+        # Creating a section where the user can customize the features of the Iris Dataset
         st.sidebar.write("Customize Input Features:")
         custom_input = {
             "sepal_length": st.sidebar.slider("Sepal Length", float(df["sepal_length"].min()), float(df["sepal_length"].max()), float(df["sepal_length"].mean())),
@@ -72,7 +75,7 @@ else:
     
 st.divider()
 
-# Showing a preview of the dataset before any machine learning
+# Showing a preview of the dataset before any machine learning, customizations, or other changes
 st.write("## Dataset Preview 🔍")
 st.dataframe(df.head())
 
@@ -103,17 +106,17 @@ model_choice = st.sidebar.selectbox("Choose a model:", ["Logistic Regression", "
 # -----------------------------------------------
 # Playing with Hyperparameters
 # ----------------------------------------------
-# Sidebar section to adjust hyperparameters based on model choice
+# Sidebar section to adjust hyperparameters based on the model choice
 st.sidebar.header("Step 4: Set Hyperparameters")
 if model_choice == "Logistic Regression":
-    max_iter = st.sidebar.slider("Maximum Iterations:", 100, 1000, 200, step=50)
-    model = LogisticRegression(max_iter=max_iter)
+    max_iter = st.sidebar.slider("Maximum Iterations:", 100, 1000, 200, step = 50)
+    model = LogisticRegression(max_iter = max_iter)
 elif model_choice == "Decision Tree":
     max_depth = st.sidebar.slider("Max Depth:", 1, 20, 5)
-    model = DecisionTreeClassifier(max_depth=max_depth)
+    model = DecisionTreeClassifier(max_depth = max_depth)
 elif model_choice == "K-Nearest Neighbors":
     n_neighbors = st.sidebar.slider("Number of Neighbors (K):", 1, 20, 5)
-    model = KNeighborsClassifier(n_neighbors=n_neighbors)
+    model = KNeighborsClassifier(n_neighbors = n_neighbors)
 
 # -----------------------------------------------
 # Customizing the Train-Test Split Ratio
