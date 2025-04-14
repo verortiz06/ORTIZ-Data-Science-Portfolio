@@ -19,7 +19,8 @@ pip install -r requirements.txt
 - Still within your terminal, type *"streamlit run mlstreamlitapp.py"*
 - This will automatically take you to a **local url** where you can use and play with the app!
 ### 4️⃣ Another Way to Run
-You can find the deployed version of the app on Streamlit Cloud here! PUT LINK HERE!!!!!!!!!!
+You can find the deployed version of the app on Streamlit Cloud here! 
+- [Click here to access the app!](https://ortiz-data-science-portfolio-mlapp.streamlit.app/)
 
 ## 🖥️  App Features 
 ### 📊 Datasets Available
