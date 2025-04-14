@@ -11,13 +11,15 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
+import graphviz
+from sklearn import tree
 
 # -----------------------------------------------
 # App Information
 # ----------------------------------------------
 st.title("Supervised Machine Learning Playground! 🛝")
 st.markdown("""
-## About This Application:
+## 📋 About This Application:
 This interactive application allows you to upload datasets, experiment with hyperparameters, and observe how you can affect 
 the model's training and performance.
 """)
@@ -26,6 +28,7 @@ st.info("Let's build a machine learning model!")
 # -----------------------------------------------
 # Uploading/Selecting a Dataset
 # ----------------------------------------------
+
 st.sidebar.header("Step 1: Upload or Select a Dataset")
 
 # Putting in classic sample datasets
@@ -51,7 +54,9 @@ else:
         df = pd.get_dummies(df, columns = ["sex"], drop_first = True) # Make sex a dummy variable
         features = ["pclass", "age", "sibsp", "parch", "fare", "sex_male"]
         df = df[features + ["survived"]]  # Keep only selected features and target
-        
+        df["survived"] = df["survived"].astype("category")
+
+
         # Creating a section where the user can customize the features of the Titanic Dataset
         st.sidebar.write("Build your own Titanic Passenger!") 
         custom_input = {
@@ -76,7 +81,9 @@ else:
 st.divider()
 
 # Showing a preview of the dataset before any machine learning, customizations, or other changes
-st.write("## Dataset Preview 🔍")
+st.write("## 🔍 Dataset Preview")
+st.markdown("Here you can see a general idea of what your chosen dataset" \
+" looks like!")
 st.dataframe(df.head())
 
 st.divider()
@@ -85,14 +92,11 @@ st.divider()
 # Choosing a Target Variable for the Dataset
 # ----------------------------------------------
 st.sidebar.header("Step 2: Choose Target Variable")
+categorical_columns = df.select_dtypes(include=['category', 'object']).columns.tolist()
+target_col = st.sidebar.selectbox("Select a categorical column to predict:", categorical_columns)
 
-# Creating selectbox so the user can choose the target variable
-target_col = st.sidebar.selectbox("Select the column to predict:", df.columns)
-
-# Include all features instead of the target in the dataset
+# Define features (X) and target (y)
 selected_features = [col for col in df.columns if col != target_col]
-
-# Create feature and target sets based on selection
 X = df[selected_features]
 y = df[target_col]
 
@@ -102,6 +106,32 @@ y = df[target_col]
 # Sidebar section to choose the ML model
 st.sidebar.header("Step 3: Select Your Machine Learning Model")
 model_choice = st.sidebar.selectbox("Choose a model:", ["Logistic Regression", "Decision Tree", "K-Nearest Neighbors"])
+if model_choice == "Logistic Regression":
+    st.sidebar.markdown("""
+    **Logistic Regression** is a linear model used for binary or multiclass classification.
+
+    It estimates the probability of a class using a logistic function.
+    
+    This machine learning model is great for understanding the impact of individual features
+    on a specific outcome.
+    """)
+elif model_choice == "Decision Tree":
+    st.sidebar.markdown("""
+    **Decision Trees** are flowchart-like structures that make decusions by asking a series of yes/no questions.
+    
+    A decision tree is composed of nodes and branches that mimic human decision making!
+
+    """)
+elif model_choice == "K-Nearest Neighbors":
+    st.sidebar.markdown("""
+    **K-Nearest Neighbors (KNN)** is a simple, instance-based algorithm best suited for classification tasks 
+    where outcomes are categorical.
+    
+    It classifies new samples based on the majority class of its **k** nearest data points. 
+    
+    Therefore, the model relies on the idea that similar data points (in the feature space) tend to have similar outcomes!
+    
+    """)
 
 # -----------------------------------------------
 # Playing with Hyperparameters
@@ -122,7 +152,7 @@ elif model_choice == "K-Nearest Neighbors":
 # Customizing the Train-Test Split Ratio
 # ----------------------------------------------
 # Sidebar section to define the train-test split ratio
-st.sidebar.header("5. Train-Test Split")
+st.sidebar.header("Step 5: Define your Train-Test Split ratio")
 test_size = st.sidebar.slider("Test Set Size (%):", 10, 50, 20)
 X_train, X_test, y_train, y_test = train_test_split(X, y, 
                                                     test_size=test_size/100,
@@ -145,7 +175,7 @@ accuracy = accuracy_score(y_test, y_pred)
 precision = precision_score(y_test, y_pred, average='weighted', zero_division=0)
 
 # Display performance metrics
-st.write("## Model Performance Metrics ⚙️")
+st.write("## ⚙️ Model Performance Metrics")
 
 # Accuracy
 st.metric("Accuracy:", f"{accuracy:.3f}")
@@ -159,15 +189,15 @@ st.markdown("Precision is defined as the model's positive predictive" \
 "value. In other words, of all predicted positives, how many were actually" \
 "positive? The way this metric is predicted is True Positives divided by Total Positives")
 
-# Confusion Matrix
-st.subheader("Model Confusion Matrix:")
-cm = confusion_matrix(y_test, y_pred)
-sns.heatmap(cm, annot = True, cmap = 'Blues')
-plt.xlabel("Predicted")
-plt.ylabel("Actual")
-plt.title("Confusion Matrix")
-st.pyplot(plt)
-st.markdown("""
+# Confusion Matrix for Titanic Dataset
+if dataset_options == "Titanic Dataset":
+    st.subheader("Model Confusion Matrix:")
+    cm = confusion_matrix(y_test, y_pred)
+    sns.heatmap(cm, annot = True, cmap = 'Blues')
+    plt.xlabel("Predicted")
+    plt.ylabel("Actual")
+    st.pyplot(plt)
+    st.markdown("""
 A **confusion matrix** gives you a visual summary of how well the model is performing by comparing actual versus predicted.
 
 - The **rows** represent the actual classes.
@@ -178,22 +208,56 @@ In a **binary classification** (such as the Titanic dataset predicting survival)
 - **Top-right** = False Positives (predicted survival, but actually didn’t)
 - **Bottom-left** = False Negatives (predicted non-survival, but actually survived)
 - **Bottom-right** = True Positives (correctly predicted survivals)
+""")
 
-In a **multiclass classification** (such as the Iris dataset predicting species), 
-it shows how often the model confuses one class for another.
+# Confusion Matrix explanation for Iris Dataset
+if dataset_options == "Iris Dataset":
+    st.subheader("Model Confusion Matrix:")
+    cm = confusion_matrix(y_test, y_pred)
+    species_labels = model.classes_
+    sns.heatmap(cm, annot = True, cmap = 'Blues',
+                xticklabels = species_labels, 
+                yticklabels = species_labels)
+    plt.xlabel("Predicted")
+    plt.ylabel("Actual")
+    st.pyplot(plt)
+    st.markdown("""In a **multiclass classification** (such as this one!) which has three classes (due to there
+                 being three species of iris), it shows how often the model confuses one class for another. The darker
+                the square when the 'actual' data matches the 'predicted' data is, the better your model is!
 """)
 
 st.divider()
 
 # Show predicted vs actual values for inspection
-st.write("## Model Predictions 🕵️")
+st.write("## 🕵️ Model Predictions")
 st.markdown("The table below allows you to inspect the dataset by displaying the actual data versus" \
-" the model's predicted values. With this, you can get another sense of which certain cases the model gets" \
+" the model's predicted values in the last two columns. With this, you can get another sense of which certain cases the model gets" \
 " correct versus makes mistakes on.")
 pred_df = X_test.copy()
 pred_df['Actual'] = y_test
 pred_df['Predicted'] = y_pred
 st.dataframe(pred_df)
+
+# ROC Curve
+if len(model.classes_) == 2:  # ROC curves only wor for binary classification
+    fpr, tpr, thresholds = roc_curve(y_test, model.predict_proba(X_test)[:, 1])
+    auc_score = roc_auc_score(y_test, model.predict_proba(X_test)[:, 1])
+
+    st.subheader("📈 ROC Curve")
+    st.markdown("A ROC curve plots the True Positive Rate (TPR) against the False" \
+    " Positive Rate (FPR). The ROC curve only works for binary classification models" \
+    " and essentially, it illustrates how well the model is performing in discriminating" \
+    " between two classes compared to just a random 50-50 guess! Therefore, the more concave" \
+    " the ROC curve is in comparison to the 'Random Guess' line, the better your model is.")
+    plt.figure()
+    plt.plot(fpr, tpr, label=f"ROC Curve (AUC = {auc_score:.2f})")
+    plt.plot([0, 1], [0, 1], 'k--', label = "Random Guess")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("Receiver Operating Characteristic (ROC) Curve")
+    plt.legend(loc = "lower right")
+    st.pyplot(plt)
+
 
 # -----------------------------------------------
 # Displaying Predictions
@@ -205,7 +269,7 @@ if dataset_options == "Iris Dataset":
     proba = model.predict_proba(custom_df)[0]
     df_prediction_proba = model.predict_proba(custom_df)[0]
     
-    st.subheader("Predicted Species 🪴")
+    st.subheader("🪴 Predicted Species")
     st.write("If you play around with the customizable input features in the sidebar, " \
     "you will be able to see the model's predictions below! The percentages illustrate the model's" \
     " estimated probability of guessing the species correct based on your custom input.")
@@ -225,7 +289,7 @@ if dataset_options == "Titanic Dataset":
     proba = model.predict_proba(custom_df)[0]
     df_prediction_proba = model.predict_proba(custom_df)[0]
     
-    st.subheader("Survival Prediction 🚢")
+    st.subheader("Survival Prediction 🚢🧊")
     st.write("If you play around with the customizable input features in the sidebar, " \
     "you will be able to see the model's predictions below! The percentages illustrate the model's" \
     " estimated probability of guessing the species correct based on your custom input.")
