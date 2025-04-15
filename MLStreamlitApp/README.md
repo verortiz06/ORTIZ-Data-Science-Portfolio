@@ -1,6 +1,6 @@
 # Streamlit App: Supervised Machine Learning
 ## 📌 Project Overview 
-This project is centered around creating an interactive Streamlit app that allows users to explore core concepts of classification models in machine learning! In this streamlit app, users can
+This project is centered around creating an interactive Streamlit app that allows users to explore core concepts of classification models in machine learning! In this streamlit app, users can:
 - Select from preloaded datasets (such at the Iris or Titanic datasets) or upload their own
 - Customize the chosen dataset's features and let the imagination run wild while building hypothetical datasets
 - Choose from popular classification models (Logistic Regression, Decision Tree, KNN)
@@ -19,7 +19,8 @@ pip install -r requirements.txt
 - Still within your terminal, type *"streamlit run mlstreamlitapp.py"*
 - This will automatically take you to a **local url** where you can use and play with the app!
 ### 4️⃣ Another Way to Run
-You can find the deployed version of the app on Streamlit Cloud here! PUT LINK HERE!!!!!!!!!!
+You can find the deployed version of the app on Streamlit Cloud here! 
+- [Click here to access the app!](https://ortiz-data-science-portfolio-mlapp.streamlit.app/)
 
 ## 🖥️  App Features 
 ### 📊 Datasets Available
