@@ -42,7 +42,9 @@ st.info("Let's build a machine learning model!")
 st.sidebar.header("Step 1: Upload or Select Dataset")
 sample_datasets = {
     "Iris Dataset": sns.load_dataset("iris").drop("species", axis=1),
+    "Palmer's Penguins": sns.load_dataset("penguins").drop(columns=["species", "island", "sex"]).dropna()  # Drop categorical cols and missing values
 }
+
 dataset_choice = st.sidebar.selectbox("Dataset Source", ["Upload Your Own"] + list(sample_datasets))
 if dataset_choice == "Upload Your Own":
     uploaded_file = st.sidebar.file_uploader("Upload a CSV file", type=["csv"])
