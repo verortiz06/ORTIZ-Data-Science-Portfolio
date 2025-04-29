@@ -60,7 +60,7 @@ st.write("### 🔍 Dataset Preview")
 st.dataframe(df.head())
 
 # -----------------------------------------------
-# ⚙️ Feature Selection + Scaling
+# Feature Selection + Scaling
 # -----------------------------------------------
 numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
 selected_features = st.multiselect("Select Features to Use", numeric_cols, default=numeric_cols)
@@ -69,13 +69,13 @@ scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
 # -----------------------------------------------
-# 🔧 Choose Model
+# Choose Model
 # -----------------------------------------------
 st.sidebar.header("Step 2: Choose a Model")
 model_type = st.sidebar.selectbox("Model Type", ["K-Means Clustering", "Hierarchical Clustering", "PCA"])
 
 # -----------------------------------------------
-# 🎛️ Hyperparameters + Training
+# Hyperparameters and Model Training
 # -----------------------------------------------
 if model_type == "K-Means Clustering":
     k = st.sidebar.slider("Number of Clusters (k)", 2, 10, 3)
@@ -86,30 +86,37 @@ if model_type == "K-Means Clustering":
     pca = PCA(n_components=2)
     pca_components = pca.fit_transform(X_scaled)
     plt.figure()
+    scatter = plt.scatter(pca_components[:, 0], pca_components[:, 1], c=labels, cmap="viridis", s=50)
     plt.scatter(pca_components[:, 0], pca_components[:, 1], c=labels, cmap="viridis", s=50)
     plt.xlabel("PCA 1")
     plt.ylabel("PCA 2")
     plt.title("K-Means Cluster Visualization")
+    plt.legend(*scatter.legend_elements(), title="Clusters")  # Legend for the clusters
     st.pyplot(plt)
 
+    # Silhouette score and plot
     silhouette = silhouette_score(X_scaled, labels)
     st.metric("Silhouette Score", f"{silhouette:.3f}")
-    
+    st.subheader("📉 Silhouette Score Plot")
+    # ADD THIS HERE!!!!!!!
+
+
     # Elbow plot
-    st.subheader("📉 Elbow Method")
+    st.subheader("📉 Elbow ")
     sse = []
     for i in range(1, 11):
         kmeans = KMeans(n_clusters=i, random_state=42).fit(X_scaled)
         sse.append(kmeans.inertia_)
     plt.figure()
     plt.plot(range(1, 11), sse, marker='o')
-    plt.xlabel("Number of Clusters")
-    plt.ylabel("SSE (Inertia)")
-    plt.title("Elbow Plot")
+    plt.xlabel("Number of Clusters (k)")
+    plt.ylabel("Within-Cluster Sum of Squares (WCSS)")
+    plt.title("Elbow Plot for Optimal k")
+    plt.grid(True)
     st.pyplot(plt)
 
 elif model_type == "Hierarchical Clustering":
-    method = st.sidebar.selectbox("Linkage Method", ["ward", "complete", "average", "single"])
+    method = st.sidebar.selectbox("Method", ["ward", "complete", "average", "single"])
     model = AgglomerativeClustering(n_clusters=3, linkage=method)
     labels = model.fit_predict(X_scaled)
 
@@ -118,8 +125,13 @@ elif model_type == "Hierarchical Clustering":
     reduced = pca.fit_transform(X_scaled)
     plt.figure()
     plt.scatter(reduced[:, 0], reduced[:, 1], c=labels, cmap='plasma')
+    scatter = plt.scatter(reduced[:, 0], reduced[:, 1], c=labels, cmap='plasma')
+    plt.legend(*scatter.legend_elements(), title="Clusters")
+    plt.title(f"Hierarchical Clustering (Method: {method})")
+    plt.grid(True)
     st.pyplot(plt)
 
+    # Dendrogram
     st.subheader("🌿 Dendrogram")
     Z = linkage(X_scaled, method=method)
     plt.figure(figsize=(10, 5))
@@ -149,7 +161,7 @@ elif model_type == "PCA":
         st.pyplot(plt)
 
 # -----------------------------------------------
-# 🧮 Cluster Labels (if applicable)
+# Cluster Labels
 # -----------------------------------------------
 if model_type in ["K-Means Clustering", "Hierarchical Clustering"]:
     st.write("### 📌 Cluster Assignments")
