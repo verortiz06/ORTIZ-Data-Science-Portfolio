@@ -34,3 +34,4 @@ st.info("Let's build a machine learning model!")
 # add feedback tab
 # File information on the sidebar with # rows, # columns, 
 # step 1: load and preprocess the data
+# adding hovering information on plots with plotly
