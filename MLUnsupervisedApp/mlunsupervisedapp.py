@@ -70,7 +70,7 @@ st.divider()
 # Step 2: Feature Selection + Scaling
 # -----------------------------------------------
 st.sidebar.header("Step 2: Choose Features")
-numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+numeric_cols = df.select_dtypes(include = [np.number]).columns.tolist()
 selected_features = st.sidebar.multiselect("Select Features to Use", numeric_cols, default = numeric_cols)
 
 if len(selected_features) < 2:
@@ -103,7 +103,13 @@ if model_choice == "Hierarchical Clustering":
                         """)
 if model_choice == "PCA":
     st.sidebar.markdown("""
-    **PCA (or Principal Component Analysis)** 
+    **PCA (or Principal Component Analysis)** is a method in which you can reduce dimensionality to 2 dimensions. 
+    
+    This works through the machine finding linear combinations within the features that capture the maximum amount
+    of variance. 
+                        
+    These linear combinations are axes, or *principal components*. We reduce down to 2 components for visualization 
+    purposes, which can illustrate for us the influence of the original features.
                         """)
 
 
@@ -111,7 +117,12 @@ if model_choice == "PCA":
 # Hyperparameters, Model Training, and Visualizations
 # -----------------------------------------------
 if model_choice == "K-Means Clustering":
+    
+    # Step 4: Choosing Hyperparameters
+    st.sidebar.header("Step 4: Choose Hyperparameters")
     k = st.sidebar.slider("Number of Clusters (k)", 2, 10, 3)
+    
+    # Training Model
     model = KMeans(n_clusters = k, random_state = 20)
     labels = model.fit_predict(X_scaled)
     
@@ -131,7 +142,7 @@ if model_choice == "K-Means Clustering":
     plt.ylabel("Principal Component 2")
     plt.title("K-Means Cluster Visualization")
     plt.grid(True)
-    plt.legend(*scatter.legend_elements(), title="Clusters")  # Legend for the clusters
+    plt.legend(*scatter.legend_elements(), title = "Clusters")  # Legend for the clusters
     st.pyplot(plt)
 
     # True labels comparison
@@ -155,7 +166,7 @@ if model_choice == "K-Means Clustering":
         plt.xlabel("Principal Component 1")
         plt.ylabel("Principal Component 2")
         plt.title("True Labels: 2D PCA Projection")
-        plt.legend(loc="best")
+        plt.legend(loc = "best")
         plt.grid(True)
         st.pyplot(plt)
 
@@ -182,15 +193,18 @@ if model_choice == "K-Means Clustering":
     k_range = range(2, 11)  # silhouette scores are only valid for k >= 2
 
     for k_val in k_range:
-        kmeans = KMeans(n_clusters=k_val, random_state = 20)
+        kmeans = KMeans(n_clusters = k_val, random_state = 20)
         kmeans.fit(X_scaled)
         sse.append(kmeans.inertia_)
         score = silhouette_score(X_scaled, kmeans.labels_)
         sil_scores.append(score)
+    
+    best_k = k_range[np.argmax(sil_scores)]
+    best_score = max(sil_scores)
 
     # Elbow Plot
     plt.figure()
-    plt.plot(list(k_range), sse, marker='o')
+    plt.plot(list(k_range), sse, marker = 'o')
     plt.xlabel("Number of Clusters")
     plt.ylabel("WCSS (Within-Cluster Sum of Squares)")
     plt.title("Elbow Plot (WCSS) for Optimal k")
@@ -202,18 +216,26 @@ if model_choice == "K-Means Clustering":
 
     # Silhouette Plot
     plt.figure()
-    plt.plot(list(k_range), sil_scores, marker='o', color='orange')
+    plt.plot(list(k_range), sil_scores, marker = 'o', color = 'orange')
     plt.xlabel("Number of Clusters")
     plt.ylabel("Silhouette Score")
     plt.title("Silhouette Score for Optimal k")
     st.pyplot(plt)
 
+    # Optimal k
+    st.info(f"Best number of clusters by silhouette score: **{best_k}** (score = {best_score:.3f})")
+
 elif model_choice == "Hierarchical Clustering":
+    
+    # Step 4: Choose Hyperparameters
+    st.sidebar.header("Step 4: Choose Hyperparameters:")
+    n_clusters = st.sidebar.slider("Number of Clusters (k)", 2, 10, 3)
+    
+    # Training Model
     method = "ward"
-    model = AgglomerativeClustering(n_clusters = 3, linkage = method)
+    model = AgglomerativeClustering(n_clusters = n_clusters, linkage = "ward")
     labels = model.fit_predict(X_scaled)
 
-    
     # Cluster scatterplot
     st.markdown("## Model Visualizations:")
     st.subheader("📊 Cluster Scatterplot (via PCA)")
@@ -221,7 +243,7 @@ elif model_choice == "Hierarchical Clustering":
     reduced = pca.fit_transform(X_scaled)
     plt.figure()
     scatter = plt.scatter(reduced[:, 0], reduced[:, 1], c = labels, cmap = 'plasma')
-    plt.legend(*scatter.legend_elements(), title="Clusters")
+    plt.legend(*scatter.legend_elements(), title = "Clusters")
     plt.title("Hierarchical Clustering (Method: ward)")
     plt.grid(True)
     plt.xlabel("Principal Component 1")
@@ -249,14 +271,14 @@ elif model_choice == "Hierarchical Clustering":
         plt.xlabel("Principal Component 1")
         plt.ylabel("Principal Component 2")
         plt.title("True Labels: 2D PCA Projection")
-        plt.legend(loc="best")
+        plt.legend(loc = "best")
         plt.grid(True)
         st.pyplot(plt)
 
     # Dendrogram
     st.subheader("🌳 Dendrogram")
-    Z = linkage(X_scaled, method=method)
-    plt.figure(figsize=(10, 5))
+    Z = linkage(X_scaled, method = method)
+    plt.figure(figsize = (10, 5))
     dendrogram(Z)
     plt.title("Hierarchical Clustering Dendrogram")
     plt.xlabel("?????") # and how on earth do i make this look better
@@ -276,13 +298,18 @@ elif model_choice == "Hierarchical Clustering":
     sil_scores = []
 
     for k in k_range:
-        hc = AgglomerativeClustering(n_clusters=k, linkage='ward')
+        hc = AgglomerativeClustering(n_clusters = k, linkage = 'ward')
         labels_k = hc.fit_predict(X_scaled)
         score = silhouette_score(X_scaled, labels_k)
         sil_scores.append(score)
 
     best_k = k_range[np.argmax(sil_scores)]
 
+    # Silhouette Score
+    silhouette = silhouette_score(X_scaled, labels)
+    st.metric("Silhouette Score", f"{silhouette:.3f}")
+
+    # Silhouette Score Plot
     plt.figure(figsize = (7, 4))
     plt.plot(list(k_range), sil_scores, marker = "o", color = 'teal')
     plt.xticks(list(k_range))
@@ -292,35 +319,85 @@ elif model_choice == "Hierarchical Clustering":
     plt.grid(True, alpha = 0.3)
     st.pyplot(plt)
 
+    # Optimal k
     st.info(f"Best number of clusters by silhouette score: **{best_k}** (score = {max(sil_scores):.3f})")
 
 elif model_choice == "PCA":
-    n_components = st.sidebar.slider("Number of Components", 1, min(10, X.shape[1]), 2)
-    pca = PCA(n_components=n_components)
-    components = pca.fit_transform(X_scaled)
+    st.markdown("## Model Visualizations:")
 
+    # Initalize PCA
+    pca = PCA(n_components = 2)
+    components = pca.fit_transform(X_scaled)
     explained_var = pca.explained_variance_ratio_
-    st.subheader("📈 Explained Variance by Component")
-    plt.figure()
-    plt.plot(range(1, n_components+1), explained_var, marker='o')
-    plt.title("Explained Variance")
-    plt.xlabel("Component")
-    plt.ylabel("Variance Ratio")
+    cumulative_var = np.cumsum(explained_var)
+
+    # Determining/Preprocessing Data
+    if dataset_choice == "Iris Dataset": # If user chooses Iris Dataset
+        full_df = sns.load_dataset("iris")
+        y = pd.factorize(full_df["species"])[0]
+        labels = full_df["species"]
+        target_names = labels.unique()
+    elif dataset_choice == "Palmer's Penguins": # If user chooses Palmer's Penguins
+        full_df = sns.load_dataset("penguins").drop(columns = ["island", "sex"]).dropna()
+        y = pd.factorize(full_df["species"])[0]
+        labels = full_df["species"]
+        target_names = labels.unique()
+    else: # If user chooses their own dataset
+        labels = None
+
+    # PCA Scatterplot
+    st.subheader("📊 PCA Scatterplot")
+    plt.figure(figsize = (8, 6))
+
+    if labels is not None:
+        colors = ['navy', 'darkorange', 'green']
+        for i, target_name in enumerate(target_names):
+            plt.scatter(
+                components[y == i, 0], components[y == i, 1],
+                alpha = 0.7, edgecolor = 'k', s = 50,
+                label = target_name, color = colors[i % len(colors)]
+            )
+        plt.legend(loc = "best")
+    else:
+        plt.scatter(components[:, 0], components[:, 1], alpha = 0.7, edgecolor = 'k', s = 50)
+
+    plt.xlabel("Principal Component 1")
+    plt.ylabel("Principal Component 2")
+    plt.title("PCA Scatterplot (2D Projection)")
+    plt.grid(True)
     st.pyplot(plt)
 
-    st.subheader("🧭 PCA Scatterplot")
-    if n_components >= 2:
-        plt.figure()
-        plt.scatter(components[:, 0], components[:, 1], alpha=0.6)
-        plt.xlabel("PC1")
-        plt.ylabel("PC2")
-        st.pyplot(plt)
+    # PCA Biplot
+    st.subheader("📌 PCA Biplot (Demonstrating Features' Influence)")
+    plt.figure(figsize = (8, 6))
+    plt.scatter(components[:, 0], components[:, 1], alpha = 0.2, edgecolor = 'gray', s = 50)
+    for i, feature in enumerate(selected_features):
+        plt.arrow(0, 0, pca.components_[0, i]*3, pca.components_[1, i]*3,
+                  color = 'r', alpha = 0.7, head_width = 0.1)
+        plt.text(pca.components_[0, i]*3.2, pca.components_[1, i]*3.2, feature, color = 'r')
+    plt.xlabel("Principal Component 1")
+    plt.ylabel("Principal Component 2")
+    plt.title("PCA Biplot")
+    plt.grid(True)
+    st.pyplot(plt)
 
-# -----------------------------------------------
-# Cluster Labels
-# -----------------------------------------------
-#if model_choice in ["K-Means Clustering", "Hierarchical Clustering"]:
-   # st.write("### 📌 Cluster Assignments")
-   # cluster_df = df.copy()
-   # cluster_df["Cluster"] = labels
-   # st.dataframe(cluster_df)
+    # Scree Plot: Cumulative Explained Variance
+    st.subheader("📉 Scree Plot (Cumulative Explained Variance)")
+    pca_full = PCA(n_components = min(15, X_scaled.shape[1])).fit(X_scaled)
+    cumulative_variance = np.cumsum(pca_full.explained_variance_ratio_)
+    plt.figure(figsize = (8, 6))
+    plt.plot(range(1, len(cumulative_variance) + 1), cumulative_variance, marker = 'o')
+    plt.xlabel('Number of Components')
+    plt.ylabel('Cumulative Explained Variance')
+    plt.title('PCA Variance Explained')
+    plt.xticks(range(1, len(cumulative_variance) + 1))
+    plt.grid(True)
+    st.pyplot(plt)
+
+    st.divider()
+
+    # Variance Explained
+    st.markdown("## 🧮 Variance Explained")
+    st.write(f"**Principal Component 1 explains:** {explained_var[0]:.2%} of variance")
+    st.write(f"**Principal Component 2 explains:** {explained_var[1]:.2%} of variance")
+    st.write(f"**Cumulative:** {cumulative_var[1]:.2%} of variance")
