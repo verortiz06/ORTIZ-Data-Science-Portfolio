@@ -21,19 +21,17 @@ from sklearn.cluster import AgglomerativeClustering
 # App Information
 # ----------------------------------------------
 st.title("Unsupervised Machine Learning Playground! 🛝") # Creating a title for the app
-st.markdown(""" 
-## 📋 About This Application:
-This interactive application allows you to upload your own dataset, learn about different 
-methods of unsupervised machine learning, experiment with hyperparameters, and observe how you can affect 
-the model's training and performance.
-""") # App description and explanation
+# Unsupervised ML explanation
+st.markdown("## 📋 About This App:")
+st.markdown("**Unsupervised machine learning** is a type of machine learning where we look for patterns and structure "
+"in data *without* being given specific labels or outcomes to predict. It's like grouping similar items " \
+"together without being told what the groups should be!")
+# App description and explanation
+st.markdown("This interactive application allows you to upload your own dataset, learn about different " \
+"methods of unsupervised machine learning, experiment with hyperparameters, and observe how you can affect " \
+"the model's training and performance.")
+
 st.info("Let's build a machine learning model!")
-
-
-# add feedback tab
-# File information on the sidebar with # rows, # columns, 
-# step 1: load and preprocess the data
-# adding hovering information on plots with plotly
 
 # -----------------------------------------------
 # Step 1: Choose Dataset
@@ -55,14 +53,28 @@ if dataset_choice == "Upload Your Own":
 else:
     df = sample_datasets[dataset_choice]
 
+# -----------------------------------------------
+# Dataset Information in Sidebar
+# -----------------------------------------------
+st.sidebar.markdown("---") # Add divider
+st.sidebar.subheader("Instant Dataset Info")
+st.sidebar.write(f"**Shape:** {df.shape[0]} rows, {df.shape[1]} columns")
+st.sidebar.markdown("---")
+
 st.divider()
 
 # -----------------------------------------------
 # Dataset Preview
 # -----------------------------------------------
 st.write("### 🔍 Dataset Preview")
-st.markdown("Here you can see the first five rows of the dataset!")
 st.dataframe(df.head())
+st.markdown("""
+Here you can see the first five rows of the dataset you selected or uploaded!
+* **Rows:** represent a single observation or data point (like a specific flower, 
+penguin, or whatever your uploaded dataset is about). 
+* **Columns:** represent a feature or characteristic of that data point 
+(like petal length, bill depth, etc.).
+""")
 
 st.divider()
 
@@ -72,6 +84,7 @@ st.divider()
 st.sidebar.header("Step 2: Choose Features")
 numeric_cols = df.select_dtypes(include = [np.number]).columns.tolist()
 selected_features = st.sidebar.multiselect("Select Features to Use", numeric_cols, default = numeric_cols)
+st.sidebar.markdown("---")
 
 if len(selected_features) < 2:
     st.warning("Please select at least two features to proceed.")
@@ -111,6 +124,7 @@ if model_choice == "PCA":
     These linear combinations are axes, or *principal components*. We reduce down to 2 components for visualization 
     purposes, which can illustrate for us the influence of the original features.
                         """)
+st.sidebar.markdown("---")
 
 
 # -----------------------------------------------
@@ -281,7 +295,7 @@ elif model_choice == "Hierarchical Clustering":
     plt.figure(figsize = (10, 5))
     dendrogram(Z)
     plt.title("Hierarchical Clustering Dendrogram")
-    plt.xlabel("?????") # and how on earth do i make this look better
+    plt.xlabel("Sample Index") # and how on earth do i make this look better
     plt.ylabel("Distance") 
     st.pyplot(plt)
     # what should the x and y labels be and how do i do that????
