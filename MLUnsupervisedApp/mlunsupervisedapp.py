@@ -519,5 +519,4 @@ Here are some extra resources to fuel your curiousity!
 * [Machine Learning 101](https://www.geeksforgeeks.org/machine-learning/)
 * [Unsupervised Learning Overview](https://www.geeksforgeeks.org/unsupervised-learning/)
 * [Data Scaling](https://www.geeksforgeeks.org/ml-feature-scaling-part-2/)
-* [Data Scaling](https://www.geeksforgeeks.org/ml-feature-scaling-part-2/)
 """)
