@@ -7,7 +7,7 @@ This repository is a centralized place to showcase all of my classwork and notab
 - Additionally, it contains in-class Jupyter notebooks which are organized by week number and subject! (Ex. *"(Week 05)-Missing-Data"*)
 - Finally *(and most importantly)*, it houses various projects I've worked on such as **`Basic-Streamlit-App`**, **`TidyData-Project`**, **`MLStreamlitApp`**, and most recently, **`MLUnsupervisedApp`**!
 
-## 🚀 Featured Projects
+## 🚀 Featured Projects At a Glance
 
 ### 👩‍💻 [Basic Streamlit App](https://github.com/verortiz06/ORTIZ-Data-Science-Portfolio/tree/main/basic-streamlit-app)
 - **Description:** This project focuses on creating an app on Streamlit which reads data and includes interactive widgets
