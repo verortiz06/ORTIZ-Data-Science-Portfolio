@@ -512,7 +512,7 @@ elif model_choice == "PCA":
 # -----------------------------------------------
 st.sidebar.divider()
 st.sidebar.markdown("""
-**Interested in learning more?** 
+**Interested in learning EVEN more?** 
                     
 Here are some extra resources to fuel your curiousity!
                     
