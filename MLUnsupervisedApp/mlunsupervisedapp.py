@@ -17,6 +17,7 @@ from sklearn.metrics import silhouette_score
 from scipy.cluster.hierarchy import linkage, dendrogram
 from sklearn.cluster import AgglomerativeClustering
 
+
 # -----------------------------------------------
 # App Information
 # ----------------------------------------------
@@ -32,6 +33,7 @@ st.markdown("This interactive application allows you to upload your own dataset,
 "the model's training and performance.")
 
 st.info("Let's build a machine learning model!")
+
 
 # -----------------------------------------------
 # Step 1: Choose Dataset
@@ -53,6 +55,7 @@ if dataset_choice == "Upload Your Own":
 else:
     df = sample_datasets[dataset_choice]
 
+
 # -----------------------------------------------
 # Dataset Information in Sidebar
 # -----------------------------------------------
@@ -63,27 +66,37 @@ st.sidebar.markdown("---")
 
 st.divider()
 
+
 # -----------------------------------------------
 # Dataset Preview
 # -----------------------------------------------
 st.write("### 🔍 Dataset Preview")
 st.dataframe(df.head())
 st.markdown("""
-Here you can see the first five rows of the dataset you selected or uploaded!
-* **Rows:** represent a single observation or data point (like a specific flower, 
-penguin, or whatever your uploaded dataset is about). 
-* **Columns:** represent a feature or characteristic of that data point 
-(like petal length, bill depth, etc.).
+Here you can see the first five rows of any dataset you've selected or uploaded!
+* **Rows:** each row represents a single observation or data point
+* **Columns:** each column represents a specific feature or characteristic of that data point
 """)
 
 st.divider()
+
 
 # -----------------------------------------------
 # Step 2: Feature Selection + Scaling
 # -----------------------------------------------
 st.sidebar.header("Step 2: Choose Features")
+st.sidebar.markdown("""
+In this step, you can choose which characteristics (or columns) from the dataset you'd want your 
+model to include in its search for a pattern!
+""")
 numeric_cols = df.select_dtypes(include = [np.number]).columns.tolist()
-selected_features = st.sidebar.multiselect("Select Features to Use", numeric_cols, default = numeric_cols)
+selected_features = st.sidebar.multiselect("✨Select Features:✨", numeric_cols, default = numeric_cols)
+st.sidebar.markdown("""
+After you've selected your features, we'll automatically **scale** the data using standard deviations.
+
+This is necessary because models such as K-Means and Hierarchical clustering calculate the distances between
+data points, which means that a uniform scale between the features is important.
+""")
 st.sidebar.markdown("---")
 
 if len(selected_features) < 2:
@@ -93,6 +106,7 @@ if len(selected_features) < 2:
 X = df[selected_features]
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
+
 
 # -----------------------------------------------
 # Step 3: Choose Model
@@ -106,6 +120,7 @@ if model_choice == "K-Means Clustering":
     It iteratively assigns a point to the nearest cluster "centroid", which is initially randomly placed, 
     and then updates the positions of the centroids based on the mean of the clusters created.
     """)
+    st.sidebar.markdown("Learn more about [K-Means Clustering](https://www.geeksforgeeks.org/k-means-clustering-introduction/)!")
 if model_choice == "Hierarchical Clustering":
     st.sidebar.markdown("""
     **Hierarchical Clustering** creates a dendogram, which is a sort of hierarchical tree
@@ -114,16 +129,15 @@ if model_choice == "Hierarchical Clustering":
     We will be using the *ward* linkage method, which means that clusters will be merged in a way that 
     results in the *smallest* increase of within-cluster variance.
                         """)
+    st.sidebar.markdown("Learn more about [Hierarchical Clustering](https://www.geeksforgeeks.org/hierarchical-clustering/)!")
 if model_choice == "PCA":
     st.sidebar.markdown("""
     **PCA (or Principal Component Analysis)** is a method in which you can reduce dimensionality to 2 dimensions. 
-    
-    This works through the machine finding linear combinations within the features that capture the maximum amount
-    of variance. 
                         
     These linear combinations are axes, or *principal components*. We reduce down to 2 components for visualization 
     purposes, which can illustrate for us the influence of the original features.
                         """)
+    st.sidebar.markdown("Learn more about [Principal Component Analysis](https://www.geeksforgeeks.org/principal-component-analysis-pca/)")
 st.sidebar.markdown("---")
 
 
@@ -134,7 +148,11 @@ if model_choice == "K-Means Clustering":
     
     # Step 4: Choosing Hyperparameters
     st.sidebar.header("Step 4: Choose Hyperparameters")
+    st.sidebar.markdown("**Hyperparameters** are a type of setting that you can prescribe to the model before it starts learning from the data.")
     k = st.sidebar.slider("Number of Clusters (k)", 2, 10, 3)
+    st.sidebar.markdown("For K-Means, the main hyperparameter is **k**, which represents the number of clusters." \
+    "Essentially, you are telling the model how many groups you are wanting it to find in the data. Experiment with this to see how it" \
+    "affects the clustering!")
     
     # Training Model
     model = KMeans(n_clusters = k, random_state = 20)
@@ -143,6 +161,8 @@ if model_choice == "K-Means Clustering":
     # Cluster scatterplot
     st.markdown("## Model Visualizations:")
     st.subheader("📊 Cluster Scatterplot")
+    st.markdown("Since your original data might have many features (or dimensions), we use **Principal Component Analysis (PCA)** here for " \
+    "visualization purposes to reduce the data down to 2 main components (PC1 and PC2) that capture the most important patterns.")
     pca = PCA(n_components = 2)
     pca_components = pca.fit_transform(X_scaled)
     plt.figure()
@@ -158,10 +178,16 @@ if model_choice == "K-Means Clustering":
     plt.grid(True)
     plt.legend(*scatter.legend_elements(), title = "Clusters")  # Legend for the clusters
     st.pyplot(plt)
+    st.markdown("""
+    * Each point is one data point from your dataset
+    * The **color** of each point indicates the cluster that the K-Means model assigned it to""")
 
     # True labels comparison
     if "species" in df.columns:
+        st.markdown("---")
         st.subheader("🎯 Comparing Clusters with True Labels")
+        st.markdown("If your dataset happens to have known categories (like the 'species' in the Iris or Penguins datasets), we can compare the " \
+        "clusters found by the algorithm to the actual known categories.")
         true_labels = df["species"]
         target_names = true_labels.unique()
         label_map = {name: idx for idx, name in enumerate(target_names)}
@@ -183,9 +209,11 @@ if model_choice == "K-Means Clustering":
         plt.legend(loc = "best")
         plt.grid(True)
         st.pyplot(plt)
+        st.markdown("""
+        * This plot shows the same 2D PCA projection as above, but this time the points are colored by their *true*, known category.
+        * Compare this plot to the cluster scatterplot above. How well do the algorithm's clusters match the true categories?""")
 
-    st.divider()
-    st.markdown("## Model Performance Metrics:")
+    #st.markdown("## Model Performance Metrics:")
 
 
     # -----------------------------------------------
@@ -201,6 +229,9 @@ if model_choice == "K-Means Clustering":
     # -----------------------------------------------
     # Elbow Method (WCSS) and Silhouette Score Plot
     st.markdown("## Evaluating Optimal Number of Clusters:")
+    st.markdown("Choosing the best number of clusters (*k*) can be tricky. Here are two common methods that can help" \
+    " you decide visually:")
+
     st.subheader("📉 Elbow Method and Silhouette Score")
     sse = []
     sil_scores = []
@@ -223,10 +254,13 @@ if model_choice == "K-Means Clustering":
     plt.ylabel("WCSS (Within-Cluster Sum of Squares)")
     plt.title("Elbow Plot (WCSS) for Optimal k")
     st.pyplot(plt)
-
-    # Silhouette Score
-    silhouette = silhouette_score(X_scaled, labels)
-    st.metric("Silhouette Score", f"{silhouette:.3f}")
+    st.markdown("""
+    The **Elbow Method** uses the **WCSS (Within-Cluster Sum of Squares)** to help find a good value for *k*.
+    * The plot above shows the WCSS calculated for different numbers of clusters (*k*). As *k* increases, WCSS will naturally decrease (because 
+    you're splitting the data into more, smaller groups, so points will be closer to their assigned center).
+    * The 'elbow' is the point on the graph where the rate of decrease in WCSS sharply changes, looking like an elbow joint. This point is often 
+    considered a good candidate for the optimal *k* because adding more clusters beyond this point doesn't give you a significant reduction in WCSS.
+    """)
 
     # Silhouette Plot
     plt.figure()
@@ -236,6 +270,21 @@ if model_choice == "K-Means Clustering":
     plt.title("Silhouette Score for Optimal k")
     st.pyplot(plt)
 
+    # Silhouette Score
+    silhouette = silhouette_score(X_scaled, labels)
+    st.metric("Silhouette Score", f"{silhouette:.3f}")
+
+    st.markdown("""
+    The **Silhouette Score** is a metric used to evaluate the quality of clusters. It measures how similar a data point is to its own cluster compared to other clusters.
+
+    * The score ranges from -1 to +1.
+    * A score close to **+1** means the data point is well within its own cluster and far from other clusters (good clustering).
+    * A score close to **0** means the data point is near the boundary between two clusters.
+    * A score close to **-1** means the data point might have been assigned to the wrong cluster.
+
+    The value shown below is the average Silhouette Score across all data points. A higher average score generally indicates better clustering.
+    """)
+
     # Optimal k
     st.info(f"Best number of clusters by silhouette score: **{best_k}** (score = {best_score:.3f})")
 
@@ -243,8 +292,12 @@ elif model_choice == "Hierarchical Clustering":
     
     # Step 4: Choose Hyperparameters
     st.sidebar.header("Step 4: Choose Hyperparameters:")
+    st.sidebar.markdown("**Hyperparameters** are a type of setting that you can prescribe to the model before it starts learning from the data.")
     n_clusters = st.sidebar.slider("Number of Clusters (k)", 2, 10, 3)
-    
+    st.sidebar.markdown("""For Hierarchical Clustering, the main hyperparameter is **k**, which represents the number of clusters you want to extract 
+    from the dendogram. Choosing the k value means that you are deciding how many final groups you want. 
+    Conceptually, you are cutting down the tree by doing this.""")
+
     # Training Model
     method = "ward"
     model = AgglomerativeClustering(n_clusters = n_clusters, linkage = "ward")
