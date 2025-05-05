@@ -71,6 +71,23 @@ if dataset_choice == "Upload Your Own":
 else:
     df = sample_datasets[dataset_choice]
 
+# -----------------------------------------------
+# Prepare True Labels for Comparison (if 'species' exists)
+# -----------------------------------------------
+# Initialize variables to store true labels for comparison plots
+y_true_comparison = None
+target_names_comparison = None
+has_true_labels = False
+
+# Check if the 'species' column exists in the dataset AFTER initial loading/cleaning
+if "species" in df.columns:
+    has_true_labels = True
+    true_labels = df["species"] # Get the 'species' column
+    target_names_comparison = true_labels.unique() # Get the unique names
+    # Create a numerical mapping for plotting colors
+    label_map = {name: idx for idx, name in enumerate(target_names_comparison)}
+    y_true_comparison = true_labels.map(label_map) # Convert labels to numerical format
+
 
 # -----------------------------------------------
 # Dataset Information in Sidebar
@@ -163,7 +180,6 @@ if model_choice == "PCA": # the information that will pop-up if the user chooses
     purposes, which can illustrate for us the influence of the original features.
                         """)
     st.sidebar.markdown("Learn more about [Principal Component Analysis](https://www.geeksforgeeks.org/principal-component-analysis-pca/)") # external link where the user can learn more about PCA
-st.sidebar.markdown("---")
 
 
 # -----------------------------------------------
@@ -212,7 +228,7 @@ if model_choice == "K-Means Clustering": # If the user chooses a K-Means machine
     * The **color** of each point indicates the cluster that the K-Means model assigned it to""") # scatterplot explanation
 
     # True labels comparison
-    if "species" in df.columns: # true label comparison only shows if there is a "species" feature in the dataset
+    if has_true_labels: # true label comparison only shows if there is a "species" feature in the dataset
         st.markdown("---")
         st.subheader("🎯 Comparing Clusters with True Labels")
         st.markdown("If your dataset happens to have known categories (like the 'species' in the Iris or Penguins datasets), we can compare the " \
@@ -223,10 +239,10 @@ if model_choice == "K-Means Clustering": # If the user chooses a K-Means machine
         y_true = true_labels.map(label_map) # applying that map to convert true labels to numerical indices
 
         plt.figure(figsize = (8, 6))
-        for i, target_name in enumerate(target_names): # loop through each unique true label
+        for i, target_name in enumerate(target_names_comparison): # loop through each unique true label
             plt.scatter(
-                pca_components[y_true == i, 0], # x-axis; PC1 values for the true labels
-                pca_components[y_true == i, 1], # y-axis; PC2 values for the true labels
+                pca_components[y_true_comparison == i, 0], # x-axis; PC1 values for the true labels
+                pca_components[y_true_comparison == i, 1], # y-axis; PC2 values for the true labels
                 alpha = 0.7,
                 edgecolor = 'k',
                 label = target_name,
@@ -347,7 +363,7 @@ elif model_choice == "Hierarchical Clustering": # If the user chooses a Hierarch
     * The **color** indicates the cluster assigned by the Hierarchical Clustering model based on the number of clusters (*k*) you selected""") # cluster scatterplot explanation
 
     # True labels comparison
-    if "species" in df.columns: # true label comparison only shows if there is a "species" feature in the dataset
+    if has_true_labels: # true label comparison only shows if there is a "species" feature in the dataset
         st.markdown("---")
         st.subheader("🎯 Comparing Clusters with True Labels")
         true_labels = df["species"] # getting the true labels from the original dataset
@@ -356,10 +372,10 @@ elif model_choice == "Hierarchical Clustering": # If the user chooses a Hierarch
         y_true = true_labels.map(label_map) # applying that map to convert true labels to numerical indices
 
         plt.figure(figsize = (8, 6))
-        for i, target_name in enumerate(target_names): # loop through each unique true label
+        for i, target_name in enumerate(target_names_comparison): # loop through each unique true label
             plt.scatter(
-                reduced[y_true == i, 0], # x-axis; PC1 values for the true labels
-                reduced[y_true == i, 1], # y-axis; PC2 values for the true labels
+                reduced[y_true_comparison == i, 0], # x-axis; PC1 values for the true labels
+                reduced[y_true_comparison == i, 1], # y-axis; PC2 values for the true labels
                 alpha = 0.7,
                 edgecolor = 'k',
                 label = target_name,
@@ -450,30 +466,16 @@ elif model_choice == "PCA": # If the user chooses a PCA machine learning model
     explained_var = pca.explained_variance_ratio_ # get the variance explained by each of the first two components
     cumulative_var = np.cumsum(explained_var) # calculate the total variance explained by both components
 
-    # Determining/Preprocessing Data
-    if dataset_choice == "Iris Dataset": # If user chooses Iris Dataset
-        full_df = sns.load_dataset("iris") # load iris dataset
-        y = pd.factorize(full_df["species"])[0]
-        labels = full_df["species"]
-        target_names = labels.unique()
-    elif dataset_choice == "Palmer's Penguins": # If user chooses Palmer's Penguins
-        full_df = sns.load_dataset("penguins").drop(columns = ["island", "sex"]).dropna() # drop categorical columns and missing values
-        y = pd.factorize(full_df["species"])[0]
-        labels = full_df["species"]
-        target_names = labels.unique()
-    else: # If user chooses their own dataset
-        labels = None
-
     # PCA Scatterplot
     st.subheader("📊 PCA Scatterplot")
     plt.figure(figsize = (8, 6))
 
-    if labels is not None: # plotting true labels by color if available
+    if has_true_labels: # plotting true labels by color if available
         colors = ['navy', 'darkorange', 'green']
-        for i, target_name in enumerate(target_names): # loop through each true label (species)
+        for i, target_name in enumerate(target_names_comparison): # loop through each true label (species)
             plt.scatter(
-                components[y == i, 0], # x-axis; PC1
-                components[y == i, 1], #y-axis; PC2
+                components[y_true_comparison == i, 0], # x-axis; PC1
+                components[y_true_comparison == i, 1], #y-axis; PC2
                 alpha = 0.7, edgecolor = 'k', s = 50,
                 label = target_name, color = colors[i % len(colors)] # labels for legend and cycle through colors
             )
