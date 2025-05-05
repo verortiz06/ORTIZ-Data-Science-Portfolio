@@ -40,11 +40,11 @@ st.info("Let's build a machine learning model!")
 # -----------------------------------------------
 st.sidebar.header("Step 1: Upload or Select Dataset")
 sample_datasets = {
-    "Iris Dataset": sns.load_dataset("iris").drop("species", axis = 1),
+    "Iris Dataset": sns.load_dataset("iris"),
     "Palmer's Penguins": sns.load_dataset("penguins").drop(columns = ["island", "sex"]).dropna() # Drop categorical cols and missing values
 }
 
-dataset_choice = st.sidebar.selectbox("Dataset Source", ["Upload Your Own"] + list(sample_datasets))
+dataset_choice = st.sidebar.selectbox("✨Choose Dataset✨", ["Upload Your Own"] + list(sample_datasets))
 if dataset_choice == "Upload Your Own":
     uploaded_file = st.sidebar.file_uploader("Upload a CSV file", type = ["csv"])
     if uploaded_file:
@@ -112,7 +112,7 @@ X_scaled = scaler.fit_transform(X)
 # Step 3: Choose Model
 # -----------------------------------------------
 st.sidebar.header("Step 3: Choose a Model")
-model_choice = st.sidebar.selectbox("Model Type", ["K-Means Clustering", "Hierarchical Clustering", "PCA"])
+model_choice = st.sidebar.selectbox("✨Choose a Model Type:✨", ["K-Means Clustering", "Hierarchical Clustering", "PCA"])
 if model_choice == "K-Means Clustering":
     st.sidebar.markdown("""
     **K-Means Clustering** groups data into *k* clusters based on feature similarity. 
@@ -149,7 +149,7 @@ if model_choice == "K-Means Clustering":
     # Step 4: Choosing Hyperparameters
     st.sidebar.header("Step 4: Choose Hyperparameters")
     st.sidebar.markdown("**Hyperparameters** are a type of setting that you can prescribe to the model before it starts learning from the data.")
-    k = st.sidebar.slider("Number of Clusters (k)", 2, 10, 3)
+    k = st.sidebar.slider("✨Number of Clusters (k)✨", 2, 10, 3)
     st.sidebar.markdown("For K-Means, the main hyperparameter is **k**, which represents the number of clusters." \
     "Essentially, you are telling the model how many groups you are wanting it to find in the data. Experiment with this to see how it" \
     "affects the clustering!")
@@ -293,7 +293,7 @@ elif model_choice == "Hierarchical Clustering":
     # Step 4: Choose Hyperparameters
     st.sidebar.header("Step 4: Choose Hyperparameters:")
     st.sidebar.markdown("**Hyperparameters** are a type of setting that you can prescribe to the model before it starts learning from the data.")
-    n_clusters = st.sidebar.slider("Number of Clusters (k)", 2, 10, 3)
+    n_clusters = st.sidebar.slider("✨Number of Clusters (k)✨", 2, 10, 3)
     st.sidebar.markdown("""For Hierarchical Clustering, the main hyperparameter is **k**, which represents the number of clusters you want to extract 
     from the dendogram. Choosing the k value means that you are deciding how many final groups you want. 
     Conceptually, you are cutting down the tree by doing this.""")
@@ -306,6 +306,7 @@ elif model_choice == "Hierarchical Clustering":
     # Cluster scatterplot
     st.markdown("## Model Visualizations:")
     st.subheader("📊 Cluster Scatterplot (via PCA)")
+    st.markdown("Similar to the K-Means visualization, this plot shows your data points in a 2-dimensional space using **Principal Component Analysis (PCA)** for visualization.")
     pca = PCA(n_components = 2)
     reduced = pca.fit_transform(X_scaled)
     plt.figure()
@@ -316,9 +317,13 @@ elif model_choice == "Hierarchical Clustering":
     plt.xlabel("Principal Component 1")
     plt.ylabel("Principal Component 2")
     st.pyplot(plt)
+    st.markdown("""
+    * Each dot is a data point
+    * The **color** indicates the cluster assigned by the Hierarchical Clustering model based on the number of clusters (*k*) you selected""")
 
     # True labels comparison
     if "species" in df.columns:
+        st.markdown("---")
         st.subheader("🎯 Comparing Clusters with True Labels")
         true_labels = df["species"]
         target_names = true_labels.unique()
@@ -341,9 +346,13 @@ elif model_choice == "Hierarchical Clustering":
         plt.legend(loc = "best")
         plt.grid(True)
         st.pyplot(plt)
+        st.markdown("If your dataset happens to have known categories (like the 'species' in the Iris or Penguins datasets), we can compare the " \
+        "clusters found by the algorithm to the actual known categories.")
 
     # Dendrogram
+    st.markdown("---")
     st.subheader("🌳 Dendrogram")
+    st.markdown("The **Dendrogram** is the main output of Hierarchical Clustering! It's a tree diagram that illustrates the sequence of merges or splits of clusters.")
     Z = linkage(X_scaled, method = method)
     plt.figure(figsize = (10, 5))
     dendrogram(Z)
@@ -351,6 +360,11 @@ elif model_choice == "Hierarchical Clustering":
     plt.xlabel("Sample Index") # and how on earth do i make this look better
     plt.ylabel("Distance") 
     st.pyplot(plt)
+    st.markdown("""
+    * The **leaves** at the bottom represent individual data points.
+    * The **branches** show how data points are grouped together into clusters.
+    * The **distance** of the merge points on the vertical axis represents the dissimilarity between the clusters being merged.
+    """)
     # what should the x and y labels be and how do i do that????
 
     st.divider()
@@ -372,10 +386,6 @@ elif model_choice == "Hierarchical Clustering":
 
     best_k = k_range[np.argmax(sil_scores)]
 
-    # Silhouette Score
-    silhouette = silhouette_score(X_scaled, labels)
-    st.metric("Silhouette Score", f"{silhouette:.3f}")
-
     # Silhouette Score Plot
     plt.figure(figsize = (7, 4))
     plt.plot(list(k_range), sil_scores, marker = "o", color = 'teal')
@@ -386,11 +396,22 @@ elif model_choice == "Hierarchical Clustering":
     plt.grid(True, alpha = 0.3)
     st.pyplot(plt)
 
+
+    # Silhouette Score
+    silhouette = silhouette_score(X_scaled, labels)
+    st.metric("Silhouette Score", f"{silhouette:.3f}")
+    st.markdown("""
+    We can use the **Silhouette Score** to help evaluate the quality of clustering for different numbers of clusters (*k*) when using Hierarchical Clustering.
+
+    This plot shows the average Silhouette Score for different values of *k* (from 2 to 10). Look for the peak in the graph - the value of *k* with the highest score is suggested as a good number of clusters for this data and method.
+    """)
+
     # Optimal k
     st.info(f"Best number of clusters by silhouette score: **{best_k}** (score = {max(sil_scores):.3f})")
 
 elif model_choice == "PCA":
     st.markdown("## Model Visualizations:")
+    st.markdown("**Principal Component Analysis (PCA)** helps us understand and visualize data with many features by reducing the number of dimensions, yet still keeping the most important information.")
 
     # Initalize PCA
     pca = PCA(n_components = 2)
@@ -433,8 +454,11 @@ elif model_choice == "PCA":
     plt.title("PCA Scatterplot (2D Projection)")
     plt.grid(True)
     st.pyplot(plt)
+    st.markdown("This plot shows your data points as the first two **Principal Components** (PC1 and PC2). These components are new 'features' that are actually created by the PCA model itself " \
+    "that capture the most variance from the original data.")
 
     # PCA Biplot
+    st.markdown("---")
     st.subheader("📌 PCA Biplot (Demonstrating Features' Influence)")
     plt.figure(figsize = (8, 6))
     plt.scatter(components[:, 0], components[:, 1], alpha = 0.2, edgecolor = 'gray', s = 50)
@@ -447,8 +471,15 @@ elif model_choice == "PCA":
     plt.title("PCA Biplot")
     plt.grid(True)
     st.pyplot(plt)
+    st.markdown("""
+    A **Biplot** combines the PCA scatterplot with arrows showing the direction and strength of the original features in the new 2D space.
+    * The **red arrows** represent the original features you selected in the sidebar
+    * The **direction** of an arrow shows how that feature contributes to the principal components. Features pointing in similar directions are likely correlated
+    * The **length** of an vectors that indicate the strength of a feature's influence on the principal components shown (PC1 and PC2)
+                """)
 
     # Scree Plot: Cumulative Explained Variance
+    st.markdown("---")
     st.subheader("📉 Scree Plot (Cumulative Explained Variance)")
     pca_full = PCA(n_components = min(15, X_scaled.shape[1])).fit(X_scaled)
     cumulative_variance = np.cumsum(pca_full.explained_variance_ratio_)
@@ -460,11 +491,33 @@ elif model_choice == "PCA":
     plt.xticks(range(1, len(cumulative_variance) + 1))
     plt.grid(True)
     st.pyplot(plt)
+    st.markdown("""
+    The **Scree Plot** helps you understand how much of the total information (variance) in your original data is captured by each principal component.
+    * The plot shows the **cumulative explained variance** as you add more principal components
+    * Ideally, you want to use a number of components that capture a high percentage of the total variance without being too many. The plot often shows an 
+    'elbow' where adding more components fails to give you much more variance    
+               """)
 
     st.divider()
 
     # Variance Explained
-    st.markdown("## 🧮 Variance Explained")
-    st.write(f"**Principal Component 1 explains:** {explained_var[0]:.2%} of variance")
-    st.write(f"**Principal Component 2 explains:** {explained_var[1]:.2%} of variance")
-    st.write(f"**Cumulative:** {cumulative_var[1]:.2%} of variance")
+    st.markdown("## 🧮 Variance Explained by Model:")
+    st.markdown("Here's how much of the total information (variance) from your original selected features is captured by the first two principal components:")
+    st.markdown(f"**Principal Component 1 explains:** {explained_var[0]:.2%} of variance")
+    st.markdown(f"**Principal Component 2 explains:** {explained_var[1]:.2%} of variance")
+    st.markdown(f"**Cumulative:** {cumulative_var[1]:.2%} of variance")
+
+# -----------------------------------------------
+# More Resources for Learning
+# -----------------------------------------------
+st.sidebar.divider()
+st.sidebar.markdown("""
+**Interested in learning more?** 
+                    
+Here are some extra resources to fuel your curiousity!
+                    
+* [Machine Learning 101](https://www.geeksforgeeks.org/machine-learning/)
+* [Unsupervised Learning Overview](https://www.geeksforgeeks.org/unsupervised-learning/)
+* [Data Scaling](https://www.geeksforgeeks.org/ml-feature-scaling-part-2/)
+* [Data Scaling](https://www.geeksforgeeks.org/ml-feature-scaling-part-2/)
+""")
