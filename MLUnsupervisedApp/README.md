@@ -5,7 +5,7 @@ This project is centered around creating an interactive Streamlit app that allow
 - Choose and play with different combinations of features from the dataset to be used by the machine learning model of their choice
 - Choose from unsupervised machine learning models such as **K-Means Clustering, Hierarchical Clustering, and Principal Component Analysis (PCA)**
 - Experiment with hyperparameters, such as the number of clusters (k), and see how the model's visualizatons, outputs, and overall performance changes
-- Analyze the model's performance through model results and performance using various graphs, such as **cluster scatter plots, dendrograms, PCA biplots**, and **scree plots**
+- Analyze the model's performance through model results and performance using various graphs, such as **cluster scatter plots, dendrograms, PCA biplots**, and **cumulative variance plots**
 - Evaluate clustering quality using metrics like a model's **Silhouette Score** and the **Elbow Method (WCSS)**
 - Compare clustering results to the sample datasets' true labels
 
