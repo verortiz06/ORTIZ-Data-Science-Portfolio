@@ -113,7 +113,6 @@ Here you can see the first five rows of any dataset you've selected or uploaded!
 
 st.divider()
 
-
 # -----------------------------------------------
 # Step 2: Feature Selection + Scaling
 # -----------------------------------------------
