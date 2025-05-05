@@ -115,8 +115,8 @@ selected_features = st.sidebar.multiselect(
 )
 st.sidebar.markdown("""
 After you've selected your features, we will automatically:
-1. Convert selected categorical features into numerical **dummy variables**.
-2. **Scale** all the selected (and converted) data using standard deviations.
+1. Convert selected categorical features into numerical **dummy variables**
+2. **Scale** all the selected (and converted) data using standard deviations
 
 Scaling is necessary because models such as K-Means and Hierarchical clustering calculate the distances between
 data points, which means that a uniform scale between the features is important.
@@ -239,7 +239,7 @@ if model_choice == "K-Means Clustering": # If the user chooses a K-Means machine
         plt.grid(True, alpha = 0.3) # adds a grid to the plot and some transparency
         st.pyplot(plt)
         st.markdown("""
-        * This plot shows the same 2D PCA projection as above, but this time the points are colored by their *true*, known category.
+        * This plot shows the same 2D PCA projection as above, but this time the points are colored by their *true*, known category
         * Compare this plot to the cluster scatterplot above. How well do the algorithm's clusters match the true categories?""") # true clusters explanation
     
     st.divider()
@@ -276,11 +276,11 @@ if model_choice == "K-Means Clustering": # If the user chooses a K-Means machine
     plt.title("Elbow Plot (WCSS) for Optimal k")
     st.pyplot(plt)
     st.markdown("""
-    The **Elbow Method** uses the **WCSS (Within-Cluster Sum of Squares)** to help find a good value for *k*.
+    The **Elbow Method** uses the **WCSS (Within-Cluster Sum of Squares)** to help find a good value for *k*
     * The plot above shows the WCSS calculated for different numbers of clusters (*k*). As *k* increases, WCSS will naturally decrease (because 
-    you're splitting the data into more, smaller groups, so points will be closer to their assigned center).
+    you're splitting the data into more, smaller groups, so points will be closer to their assigned center)
     * The 'elbow' is the point on the graph where the rate of decrease in WCSS sharply changes, looking like an elbow joint. This point is often 
-    considered a good candidate for the optimal *k* because adding more clusters beyond this point doesn't give you a significant reduction in WCSS.
+    considered a good candidate for the optimal *k* because adding more clusters beyond this point doesn't give you a significant reduction in WCSS
     """) # elbow plot explanation
 
     # Silhouette Plot
@@ -298,10 +298,10 @@ if model_choice == "K-Means Clustering": # If the user chooses a K-Means machine
     st.markdown("""
     The **Silhouette Score** is a metric used to evaluate the quality of clusters. It measures how similar a data point is to its own cluster compared to other clusters.
 
-    * The score ranges from -1 to +1.
-    * A score close to **+1** means the data point is well within its own cluster and far from other clusters (good clustering).
-    * A score close to **0** means the data point is near the boundary between two clusters.
-    * A score close to **-1** means the data point might have been assigned to the wrong cluster.
+    * The score ranges from -1 to +1
+    * A score close to **+1** means the data point is well within its own cluster and far from other clusters (good clustering)
+    * A score close to **0** means the data point is near the boundary between two clusters
+    * A score close to **-1** means the data point might have been assigned to the wrong cluster
 
     The value shown below is the average Silhouette Score across all data points. A higher average score generally indicates better clustering.
     """) # Silhouette Score explanation
@@ -387,9 +387,9 @@ elif model_choice == "Hierarchical Clustering": # If the user chooses a Hierarch
     plt.ylabel("Distance") 
     st.pyplot(plt)
     st.markdown("""
-    * The **leaves** at the bottom represent individual data points.
-    * The **branches** show how data points are grouped together into clusters.
-    * The **distance** of the merge points on the vertical axis represents the dissimilarity between the clusters being merged.
+    * The **leaves** at the bottom represent individual data points
+    * The **branches** show how data points are grouped together into clusters
+    * The **distance** of the merge points on the vertical axis represents the dissimilarity between the clusters being merged
     * Since showing *every* single data point in the dendrogram can look overwheling and unflattering, we **truncate** it so that the number of data points belong to the unique branches
     are displayed in parantheses to represent a merged cluster
     """) # dendrogram plot explanation
