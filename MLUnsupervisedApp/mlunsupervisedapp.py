@@ -42,8 +42,8 @@ st.info("Let's build a machine learning model!")
 # -----------------------------------------------
 st.sidebar.header("Step 1: Upload or Select Dataset")
 sample_datasets = {
-    "Iris Dataset": sns.load_dataset("iris"), # first datset option: Iris
-    "Palmer's Penguins": sns.load_dataset("penguins").drop(columns = ["island", "sex"]).dropna() # second datset option: Penguins; Drop categorical cols and missing values
+    "Iris Dataset": sns.load_dataset("iris").dropna(), # first datset option: Iris
+    "Palmer's Penguins": sns.load_dataset("penguins").dropna() # second datset option: Penguins; Drop categorical cols and missing values
 }
 
 dataset_choice = st.sidebar.selectbox("✨Choose Dataset✨", ["Upload Your Own"] + list(sample_datasets)) # user can choose their own dataset 
@@ -51,6 +51,20 @@ if dataset_choice == "Upload Your Own":
     uploaded_file = st.sidebar.file_uploader("Upload a CSV file", type = ["csv"]) # must be in a csv format
     if uploaded_file:
         df = pd.read_csv(uploaded_file)
+        # Preprocessing uploaded data:
+        # Drop rows with any missing values
+        initial_rows = df.shape[0]
+        df = df.dropna()
+        rows_after_dropna = df.shape[0]
+        if initial_rows > rows_after_dropna:
+            st.warning(f"Dropped {initial_rows - rows_after_dropna} row(s) containing missing values.")
+        # Check if DataFrame is empty after dropping the missing values
+        if df.empty:
+            st.error("The dataset is empty after removing rows with missing values. Please upload a dataset with valid data.")
+            st.stop() # stops the app since dataset has been emptied
+        # Convert categorical variables to dummy variables
+        df_processed = pd.get_dummies(df)
+        df = df_processed # updates the DataFrame to the processed one
     else:
         st.warning("Please upload a CSV file.") # if they do not upload a dataset, the app tells them to or else nothing will happen
         st.stop()
@@ -91,21 +105,30 @@ st.sidebar.markdown("""
 In this step, you can choose which characteristics (or columns) from the dataset you'd want your 
 model to include in its search for a pattern!
 """)
-numeric_cols = df.select_dtypes(include = [np.number]).columns.tolist() # only pulls from the numeric columns of the datset for the model
-selected_features = st.sidebar.multiselect("✨Select Features:✨", numeric_cols, default = numeric_cols) # allows the user to choose which features they want to be analyzed
-st.sidebar.markdown("""
-After you've selected your features, we'll automatically **scale** the data using standard deviations.
 
-This is necessary because models such as K-Means and Hierarchical clustering calculate the distances between
+all_cols = df.columns.tolist() # gets list of all columns available for selection
+numeric_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+selected_features = st.sidebar.multiselect(
+    "✨Select Features:✨",
+    all_cols, # Provide all columns as options
+    default = all_cols # set numeric columns as the default selection
+)
+st.sidebar.markdown("""
+After you've selected your features, we will automatically:
+1. Convert selected categorical features into numerical **dummy variables**.
+2. **Scale** all the selected (and converted) data using standard deviations.
+
+Scaling is necessary because models such as K-Means and Hierarchical clustering calculate the distances between
 data points, which means that a uniform scale between the features is important.
 """) # explanation of the step for the user
 st.sidebar.markdown("---")
 
-if len(selected_features) < 2: # this makes the user choose at least two features so that the machine learning can happen
-    st.warning("Please select at least two features to proceed.") # gives a warning if less than two features are selected
+if len(selected_features) < 2: # checks if at least two original features were selected
+    st.warning("Please select at least two features to proceed.")
     st.stop()
 
-X = df[selected_features]
+df_selected = df[selected_features] # creating dataframe with only the selected features
+X = pd.get_dummies(df_selected) # converting selected categorical features to dummy variables
 scaler = StandardScaler() # scales the features using standard deviations so that the distance being calculated between them is uniform
 X_scaled = scaler.fit_transform(X)
 
@@ -357,7 +380,8 @@ elif model_choice == "Hierarchical Clustering": # If the user chooses a Hierarch
     st.markdown("The **Dendrogram** is the main output of Hierarchical Clustering! It's a tree diagram that illustrates the sequence of merges or splits of clusters.") # dendrogram explanation
     Z = linkage(X_scaled, method = method) # do the hierarchical clustering linkage calculation using 'ward' method on the scaled data
     plt.figure(figsize = (10, 5))
-    dendrogram(Z) # generate the dendrogram plot
+    dendrogram(Z,
+               truncate_mode = "lastp") # truncates the number of examples shown
     plt.title("Hierarchical Clustering Dendrogram")
     plt.xlabel("Sample Index") # and how on earth do i make this look better
     plt.ylabel("Distance") 
@@ -366,6 +390,8 @@ elif model_choice == "Hierarchical Clustering": # If the user chooses a Hierarch
     * The **leaves** at the bottom represent individual data points.
     * The **branches** show how data points are grouped together into clusters.
     * The **distance** of the merge points on the vertical axis represents the dissimilarity between the clusters being merged.
+    * Since showing *every* single data point in the dendrogram can look overwheling and unflattering, we **truncate** it so that the number of data points belong to the unique branches
+    are displayed in parantheses to represent a merged cluster
     """) # dendrogram plot explanation
 
     st.divider()
@@ -488,25 +514,50 @@ elif model_choice == "PCA": # If the user chooses a PCA machine learning model
     * The **length** of an vectors that indicate the strength of a feature's influence on the principal components shown (PC1 and PC2)
                 """) # biplot explanation
 
-    # Scree Plot: Cumulative Explained Variance
+    # Combined Variance Plot
     st.markdown("---")
-    st.subheader("📉 Scree Plot (Cumulative Explained Variance)")
-    pca_full = PCA(n_components = min(15, X_scaled.shape[1])).fit(X_scaled) # allows for PCA fitting on potentially larger number of components (up to 15 features)
-    cumulative_variance = np.cumsum(pca_full.explained_variance_ratio_) # calculate the cumulative sum of explained variance for each component
-    plt.figure(figsize = (8, 6))
-    plt.plot(range(1, len(cumulative_variance) + 1), cumulative_variance, marker = 'o') # x-axis is component number
-    plt.xlabel('Number of Components')
-    plt.ylabel('Cumulative Explained Variance')
-    plt.title('PCA Variance Explained')
-    plt.xticks(range(1, len(cumulative_variance) + 1)) # puts ticks on the x-axis
-    plt.grid(True, alpha = 0.3) # adds grid lines to the plot and some transparency
-    st.pyplot(plt)
+    st.subheader("📉 Combined Variance Plot")
+    n_components_to_plot = min(X_scaled.shape[1], 15)
+    pca_full = PCA(n_components = n_components_to_plot).fit(X_scaled)
+    # Get explained variance ratios and converting them to percentages for the plot
+    individual_variance_ratio = pca_full.explained_variance_ratio_
+    individual_variance_percent = individual_variance_ratio * 100 
+    cumulative_variance_ratio = np.cumsum(individual_variance_ratio)
+    cumulative_variance_percent = cumulative_variance_ratio * 100 
+    components = range(1, len(individual_variance_percent) + 1) # component numbers for x-axis
+    fig, ax1 = plt.subplots(figsize=(10, 6)) # create the figure
+    # Making the bar plot for INDIVIDUAL variance explained
+    bar_color = 'steelblue'
+    ax1.bar(components, individual_variance_percent, color = bar_color, alpha = 0.8, label = 'Individual Variance')
+    ax1.set_xlabel('Principal Component')
+    ax1.set_ylabel('Individual Variance Explained (%)', color = bar_color)
+    ax1.tick_params(axis = 'y', labelcolor = bar_color)
+    ax1.set_xticks(components)
+    ax1.set_xticklabels([f"PC{i}" for i in components]) # formatting x-axis labels as PC1, PC2, etc
+    for i, v in enumerate(individual_variance_percent): # adding percentage labels on top of each bar
+        ax1.text(components[i], v + 1, f"{v:.1f}%", ha = 'center', va = 'bottom', fontsize = 9, color = 'black')
+    # Creating the second y-axis for CUMULATIVE variance explained
+    ax2 = ax1.twinx()
+    line_color = 'crimson' # making this other part of the graph look distinct from bar chart
+    ax2.plot(components, cumulative_variance_percent, color = line_color, marker = 'o', label = 'Cumulative Variance')
+    ax2.set_ylabel('Cumulative Variance Explained (%)', color = line_color)
+    ax2.tick_params(axis = 'y', labelcolor = line_color)
+    ax2.set_ylim(0, 100) # this sets the y-axis limit to 100%
+    ax1.grid(False) # removing the grid lines to help readability
+    ax2.grid(False)
+    # Combine legends from both axes
+    lines1, labels1 = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    ax1.legend(lines1 + lines2, labels1 + labels2, loc = 'center right', bbox_to_anchor = (0.9, 0.5))
+    plt.title('PCA: Variance Explained')
+    st.pyplot(fig)
     st.markdown("""
-    The **Scree Plot** helps you understand how much of the total information (variance) in your original data is captured by each principal component.
-    * The plot shows the **cumulative explained variance** as you add more principal components
-    * Ideally, you want to use a number of components that capture a high percentage of the total variance without being too many. The plot often shows an 
-    'elbow' where adding more components fails to give you much more variance    
-               """) # scree plot explanation
+    * The **blue bars** show the proportion of the total variance explained by each **individual** principal component (PC1, PC2, etc.). PC1 typically explains the most variance, and you can see that with additional
+    components, the contribution to the explained variance begins decreasing dramatically
+    * The **red line** shows the **cumulative** variance explained as you add more principal components. This line increases as you include more components, reaching 100% when all components are included
+    * This plot is helpfup for deciding how many principal components to choose. A common strategy is to choose the number of components that explains a high percentage of the total variance while also considering the 
+    "elbow" point where individual variance gain significantly decreases
+    """) # combined variance plot explanation
 
     st.divider()
 
